@@ -1,0 +1,19 @@
+{
+  "name": "@coolescoden/accounts",
+  "version": "1.0.0",
+  "description": "Simple Account Management in any express.js application",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coolescoden/accounts.git"
+  },
+  "author": "Ben Siebert",
+  "license": "GPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/coolescoden/accounts/issues"
+  },
+  "homepage": "https://github.com/coolescoden/accounts#readme"
+}
