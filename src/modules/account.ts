@@ -393,4 +393,116 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             return;
         }
     })
+
+    app.post(`${globals.route_start}/account/update/username`, async (req, res) => {
+        if(!req.body || !req.body.token || !req.body.newUsername) {
+            res.status(400).json({
+                error: "Missing parameters"
+            })
+            return;
+        }
+
+        try {
+            const token = await TokenSchema.findOne({ token: req.body.token });
+
+            if(!token) {
+                res.status(400).json({
+                    error: "Invalid token"
+                })
+                return;
+            }
+
+            if(!hasPermission(token.permissions, "UPDATE_USERNAME")) {
+                res.status(403).json({
+                    error: "You don't have permission to update username"
+                })
+                return;
+            }
+
+            const user = await UserSchema.findOne({ _id: token.userId });
+
+            if(!user) {
+                res.status(400).json({
+                    error: "Invalid user"
+                })
+                return;
+            }
+
+            if(user.username === req.body.newUsername) {
+                res.status(400).json({
+                    error: "Username already exists"
+                })
+                return;
+            }
+
+            await user.update({
+                username: req.body.newUsername
+            })
+
+            res.status(200).json({
+                success: true,
+                message: "Username updated"
+            })
+
+        }catch (e) {
+            res.status(500).json({
+                error: e.message
+            })
+            return;
+        }
+    })
+
+    app.post(`${globals.route_start}/account/update/password`, async (req, res) => {
+        if(!req.body || !req.body.token || !req.body.newPassword) {
+            res.status(400).json({
+                error: "Missing parameters"
+            })
+            return;
+        }
+
+        try {
+            const token = await TokenSchema.findOne({ token: req.body.token });
+
+            if(!token) {
+                res.status(400).json({
+                    error: "Invalid token"
+                })
+                return;
+            }
+
+            if(!hasPermission(token.permissions, "UPDATE_PASSWORD")) {
+                res.status(403).json({
+                    error: "You don't have permission to update password"
+                })
+                return;
+            }
+
+            const user = await UserSchema.findOne({ _id: token.userId });
+
+            if(!user) {
+                res.status(400).json({
+                    error: "Invalid user"
+                })
+                return;
+            }
+
+
+            const hashedPassword = crypto.createHash("sha256").update(req.body.newPassword).digest("hex");
+
+            await user.update({
+                password: hashedPassword
+            })
+
+            res.status(200).json({
+                success: true,
+                message: "Password updated"
+            })
+
+        }catch (e) {
+            res.status(500).json({
+                error: e.message
+            })
+            return;
+        }
+    })
 }

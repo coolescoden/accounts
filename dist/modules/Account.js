@@ -460,6 +460,129 @@ function default_1(app, smtp) {
             }
         });
     }); });
+    app.post("".concat(globals.route_start, "/account/update/username"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var token, user, e_8;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!req.body || !req.body.token || !req.body.newUsername) {
+                        res.status(400).json({
+                            error: "Missing parameters"
+                        });
+                        return [2 /*return*/];
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 5, , 6]);
+                    return [4 /*yield*/, Token_1.default.findOne({ token: req.body.token })];
+                case 2:
+                    token = _a.sent();
+                    if (!token) {
+                        res.status(400).json({
+                            error: "Invalid token"
+                        });
+                        return [2 /*return*/];
+                    }
+                    if (!(0, Permissions_1.hasPermission)(token.permissions, "UPDATE_USERNAME")) {
+                        res.status(403).json({
+                            error: "You don't have permission to update username"
+                        });
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, User_1.default.findOne({ _id: token.userId })];
+                case 3:
+                    user = _a.sent();
+                    if (!user) {
+                        res.status(400).json({
+                            error: "Invalid user"
+                        });
+                        return [2 /*return*/];
+                    }
+                    if (user.username === req.body.newUsername) {
+                        res.status(400).json({
+                            error: "Username already exists"
+                        });
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, user.update({
+                            username: req.body.newUsername
+                        })];
+                case 4:
+                    _a.sent();
+                    res.status(200).json({
+                        success: true,
+                        message: "Username updated"
+                    });
+                    return [3 /*break*/, 6];
+                case 5:
+                    e_8 = _a.sent();
+                    res.status(500).json({
+                        error: e_8.message
+                    });
+                    return [2 /*return*/];
+                case 6: return [2 /*return*/];
+            }
+        });
+    }); });
+    app.post("".concat(globals.route_start, "/account/update/password"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var token, user, hashedPassword, e_9;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!req.body || !req.body.token || !req.body.newPassword) {
+                        res.status(400).json({
+                            error: "Missing parameters"
+                        });
+                        return [2 /*return*/];
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 5, , 6]);
+                    return [4 /*yield*/, Token_1.default.findOne({ token: req.body.token })];
+                case 2:
+                    token = _a.sent();
+                    if (!token) {
+                        res.status(400).json({
+                            error: "Invalid token"
+                        });
+                        return [2 /*return*/];
+                    }
+                    if (!(0, Permissions_1.hasPermission)(token.permissions, "UPDATE_PASSWORD")) {
+                        res.status(403).json({
+                            error: "You don't have permission to update password"
+                        });
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, User_1.default.findOne({ _id: token.userId })];
+                case 3:
+                    user = _a.sent();
+                    if (!user) {
+                        res.status(400).json({
+                            error: "Invalid user"
+                        });
+                        return [2 /*return*/];
+                    }
+                    hashedPassword = crypto.createHash("sha256").update(req.body.newPassword).digest("hex");
+                    return [4 /*yield*/, user.update({
+                            password: hashedPassword
+                        })];
+                case 4:
+                    _a.sent();
+                    res.status(200).json({
+                        success: true,
+                        message: "Password updated"
+                    });
+                    return [3 /*break*/, 6];
+                case 5:
+                    e_9 = _a.sent();
+                    res.status(500).json({
+                        error: e_9.message
+                    });
+                    return [2 /*return*/];
+                case 6: return [2 /*return*/];
+            }
+        });
+    }); });
 }
 exports.default = default_1;
 //# sourceMappingURL=account.js.map
