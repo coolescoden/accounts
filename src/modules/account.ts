@@ -9,6 +9,7 @@ import * as crypto from "crypto";
 import {randomString} from "../StringUtil";
 import * as nodemailer from "nodemailer";
 import TokenSchema from "../models/Token";
+import {hasPermission} from "../Permissions";
 
 export default function (app: Express, smtp: { host: string, port: number, secure: boolean, auth: { user: string, pass: string }, displayName: string }) {
 
@@ -281,6 +282,108 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             res.status(200).json({
                 success: true,
                 message: "Token deleted"
+            })
+
+        }catch (e) {
+            res.status(500).json({
+                error: e.message
+            })
+            return;
+        }
+    })
+
+    app.post(`${globals.route_start}/account/token/login`, async (req, res) => {
+        if(!req.body || !req.body.token) {
+            res.status(400).json({
+                error: "Missing parameters"
+            })
+            return;
+        }
+
+        try {
+            const token = await TokenSchema.findOne({ token: req.body.token });
+
+            if(!token) {
+                res.status(400).json({
+                    error: "Invalid token"
+                })
+                return;
+            }
+
+            const user = await UserSchema.findOne({ _id: token.userId });
+
+            const x = JSON.parse(JSON.stringify(user));
+
+            if(!hasPermission(token.permissions, "VIEW_PASSWORD")) {
+                delete x.password;
+            }
+
+            if(!hasPermission(token.permissions, "VIEW_EMAIL")) {
+                delete x.email;
+            }
+
+            if(!hasPermission(token.permissions, "VIEW_CREATED_AT")) {
+                delete x.createdAt;
+            }
+
+            if(!hasPermission(token.permissions, "VIEW_UPDATED_AT")) {
+                delete x.updatedAt;
+            }
+
+            delete x.__v;
+            delete x.active;
+            delete x.activationToken;
+
+            res.status(200).json({
+                success: true,
+                user: x
+            })
+
+        }catch (e) {
+            res.status(500).json({
+                error: e.message
+            })
+            return;
+        }
+    })
+
+    app.post(`${globals.route_start}/account/token/refresh`, async (req, res) => {
+        if(!req.body || !req.body.token) {
+            res.status(400).json({
+                error: "Missing parameters"
+            })
+            return;
+        }
+
+        try {
+            const token = await TokenSchema.findOne({ token: req.body.token });
+
+            if(!token) {
+                res.status(400).json({
+                    error: "Invalid token"
+                })
+                return;
+            }
+
+            const user = await UserSchema.findOne({ _id: token.userId });
+
+            if(!user) {
+                res.status(400).json({
+                    error: "Invalid user"
+                })
+                return;
+            }
+
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 1);
+
+            await token.update({
+                expiresAt: expiresAt
+            })
+
+            res.status(200).json({
+                success: true,
+                expiresAt: expiresAt
             })
 
         }catch (e) {

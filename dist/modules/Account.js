@@ -42,6 +42,7 @@ var crypto = require("crypto");
 var StringUtil_1 = require("../StringUtil");
 var nodemailer = require("nodemailer");
 var Token_1 = require("../models/Token");
+var Permissions_1 = require("../Permissions");
 function default_1(app, smtp) {
     var _this = this;
     var transporter = nodemailer.createTransport({
@@ -342,6 +343,117 @@ function default_1(app, smtp) {
                     e_5 = _a.sent();
                     res.status(500).json({
                         error: e_5.message
+                    });
+                    return [2 /*return*/];
+                case 6: return [2 /*return*/];
+            }
+        });
+    }); });
+    app.post("".concat(globals.route_start, "/account/token/login"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var token, user, x, e_6;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!req.body || !req.body.token) {
+                        res.status(400).json({
+                            error: "Missing parameters"
+                        });
+                        return [2 /*return*/];
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 4, , 5]);
+                    return [4 /*yield*/, Token_1.default.findOne({ token: req.body.token })];
+                case 2:
+                    token = _a.sent();
+                    if (!token) {
+                        res.status(400).json({
+                            error: "Invalid token"
+                        });
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, User_1.default.findOne({ _id: token.userId })];
+                case 3:
+                    user = _a.sent();
+                    x = JSON.parse(JSON.stringify(user));
+                    if (!(0, Permissions_1.hasPermission)(token.permissions, "VIEW_PASSWORD")) {
+                        delete x.password;
+                    }
+                    if (!(0, Permissions_1.hasPermission)(token.permissions, "VIEW_EMAIL")) {
+                        delete x.email;
+                    }
+                    if (!(0, Permissions_1.hasPermission)(token.permissions, "VIEW_CREATED_AT")) {
+                        delete x.createdAt;
+                    }
+                    if (!(0, Permissions_1.hasPermission)(token.permissions, "VIEW_UPDATED_AT")) {
+                        delete x.updatedAt;
+                    }
+                    delete x.__v;
+                    delete x.active;
+                    delete x.activationToken;
+                    res.status(200).json({
+                        success: true,
+                        user: x
+                    });
+                    return [3 /*break*/, 5];
+                case 4:
+                    e_6 = _a.sent();
+                    res.status(500).json({
+                        error: e_6.message
+                    });
+                    return [2 /*return*/];
+                case 5: return [2 /*return*/];
+            }
+        });
+    }); });
+    app.post("".concat(globals.route_start, "/account/token/refresh"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var token, user, expiresAt, e_7;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!req.body || !req.body.token) {
+                        res.status(400).json({
+                            error: "Missing parameters"
+                        });
+                        return [2 /*return*/];
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 5, , 6]);
+                    return [4 /*yield*/, Token_1.default.findOne({ token: req.body.token })];
+                case 2:
+                    token = _a.sent();
+                    if (!token) {
+                        res.status(400).json({
+                            error: "Invalid token"
+                        });
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, User_1.default.findOne({ _id: token.userId })];
+                case 3:
+                    user = _a.sent();
+                    if (!user) {
+                        res.status(400).json({
+                            error: "Invalid user"
+                        });
+                        return [2 /*return*/];
+                    }
+                    expiresAt = new Date();
+                    expiresAt.setDate(expiresAt.getDate() + 1);
+                    return [4 /*yield*/, token.update({
+                            expiresAt: expiresAt
+                        })];
+                case 4:
+                    _a.sent();
+                    res.status(200).json({
+                        success: true,
+                        expiresAt: expiresAt
+                    });
+                    return [3 /*break*/, 6];
+                case 5:
+                    e_7 = _a.sent();
+                    res.status(500).json({
+                        error: e_7.message
                     });
                     return [2 /*return*/];
                 case 6: return [2 /*return*/];
