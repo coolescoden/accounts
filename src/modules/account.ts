@@ -59,7 +59,6 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             })
 
             console.log("Message sent: %s", info.messageId);
-            console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 
             res.status(200).json({
                 success: true,
@@ -115,4 +114,83 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             })
         })
     })
+
+    app.post(`${globals.route_start}/account/delete`, async (req, res) => {
+        if(!req.body || !req.body.username || !req.body.password) {
+            res.status(400).json({
+                error: "Missing parameters"
+            })
+            return;
+        }
+
+        try {
+            const user = await UserSchema.findOne({ name: req.body.username, password: crypto.createHash("sha256").update(req.body.password).digest("hex") });
+
+            if(!user) {
+                res.status(400).json({
+                    error: "Invalid credentials"
+                })
+                return;
+            }
+
+            user.deletionToken = user.name + "$" + randomString(48);
+            await user.save();
+
+            const info = await transporter.sendMail({
+                from: smtp.displayName + " <" + smtp.auth.user + ">",
+                to: user.email,
+                subject: "Account deletion",
+                text: `Hello ${user.name},\n\nPlease click on the following link to delete your account:\n\n${req.protocol + "//" + req.hostname}${globals.route_start}/account/delete/${user.deletionToken}\n\nThank you!`,
+                html: `<p>Hello ${user.name},</p><p>Please click on the following link to delete your account:</p><p><a href="${req.protocol + "//" + req.hostname}${globals.route_start}/account/delete/${user.deletionToken}">${req.protocol + "//" + req.hostname}${globals.route_start}/account/delete/${user.activationToken}</a></p><p>Thank you!</p>`
+            })
+
+            console.log("Message sent: %s", info.messageId);
+
+
+            res.status(200).json({
+                success: true,
+                message: "An email has been sent to you to confirm the deletion of your account"
+            })
+
+        }catch (e) {
+            res.status(500).json({
+                error: e.message
+            })
+            return;
+        }
+    })
+
+    app.get(`${globals.route_start}/account/delete/:token`, async (req, res) => {
+        if(!req.params || !req.params.token) {
+            res.status(400).json({
+                error: "Missing parameters"
+            })
+            return;
+        }
+
+        try {
+            const user = await UserSchema.findOne({ deletionToken: req.params.token });
+
+            if(!user) {
+                res.status(400).json({
+                    error: "Invalid token"
+                })
+                return;
+            }
+
+            await user.remove();
+
+            res.status(200).json({
+                success: true,
+                message: "Your account has been deleted"
+            })
+
+        }catch (e) {
+            res.status(500).json({
+                error: e.message
+            })
+            return;
+        }
+    })
+
 }

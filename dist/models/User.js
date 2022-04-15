@@ -38,6 +38,10 @@ var UserSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
+    deletionToken: {
+        type: String,
+        required: false,
+    },
 });
 exports.default = mongoose.model("User", UserSchema);
 //# sourceMappingURL=User.js.map

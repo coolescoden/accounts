@@ -38,6 +38,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
+    deletionToken: {
+        type: String,
+        required: false,
+    },
 })
 
 export default mongoose.model("User", UserSchema);

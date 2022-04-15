@@ -95,7 +95,6 @@ function default_1(app, smtp) {
                 case 5:
                     info = _a.sent();
                     console.log("Message sent: %s", info.messageId);
-                    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
                     res.status(200).json({
                         success: true,
                         user: user
@@ -147,6 +146,99 @@ function default_1(app, smtp) {
             });
         });
     });
+    app.post("".concat(globals.route_start, "/account/delete"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var user, info, e_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!req.body || !req.body.username || !req.body.password) {
+                        res.status(400).json({
+                            error: "Missing parameters"
+                        });
+                        return [2 /*return*/];
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 5, , 6]);
+                    return [4 /*yield*/, User_1.default.findOne({ name: req.body.username, password: crypto.createHash("sha256").update(req.body.password).digest("hex") })];
+                case 2:
+                    user = _a.sent();
+                    if (!user) {
+                        res.status(400).json({
+                            error: "Invalid credentials"
+                        });
+                        return [2 /*return*/];
+                    }
+                    user.deletionToken = user.name + "$" + (0, StringUtil_1.randomString)(48);
+                    return [4 /*yield*/, user.save()];
+                case 3:
+                    _a.sent();
+                    return [4 /*yield*/, transporter.sendMail({
+                            from: smtp.displayName + " <" + smtp.auth.user + ">",
+                            to: user.email,
+                            subject: "Account deletion",
+                            text: "Hello ".concat(user.name, ",\n\nPlease click on the following link to delete your account:\n\n").concat(req.protocol + "//" + req.hostname).concat(globals.route_start, "/account/delete/").concat(user.deletionToken, "\n\nThank you!"),
+                            html: "<p>Hello ".concat(user.name, ",</p><p>Please click on the following link to delete your account:</p><p><a href=\"").concat(req.protocol + "//" + req.hostname).concat(globals.route_start, "/account/delete/").concat(user.deletionToken, "\">").concat(req.protocol + "//" + req.hostname).concat(globals.route_start, "/account/delete/").concat(user.activationToken, "</a></p><p>Thank you!</p>")
+                        })];
+                case 4:
+                    info = _a.sent();
+                    console.log("Message sent: %s", info.messageId);
+                    res.status(200).json({
+                        success: true,
+                        message: "An email has been sent to you to confirm the deletion of your account"
+                    });
+                    return [3 /*break*/, 6];
+                case 5:
+                    e_2 = _a.sent();
+                    res.status(500).json({
+                        error: e_2.message
+                    });
+                    return [2 /*return*/];
+                case 6: return [2 /*return*/];
+            }
+        });
+    }); });
+    app.get("".concat(globals.route_start, "/account/delete/:token"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var user, e_3;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!req.params || !req.params.token) {
+                        res.status(400).json({
+                            error: "Missing parameters"
+                        });
+                        return [2 /*return*/];
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 4, , 5]);
+                    return [4 /*yield*/, User_1.default.findOne({ deletionToken: req.params.token })];
+                case 2:
+                    user = _a.sent();
+                    if (!user) {
+                        res.status(400).json({
+                            error: "Invalid token"
+                        });
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, user.remove()];
+                case 3:
+                    _a.sent();
+                    res.status(200).json({
+                        success: true,
+                        message: "Your account has been deleted"
+                    });
+                    return [3 /*break*/, 5];
+                case 4:
+                    e_3 = _a.sent();
+                    res.status(500).json({
+                        error: e_3.message
+                    });
+                    return [2 /*return*/];
+                case 5: return [2 /*return*/];
+            }
+        });
+    }); });
 }
 exports.default = default_1;
 //# sourceMappingURL=account.js.map
