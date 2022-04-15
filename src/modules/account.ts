@@ -505,4 +505,62 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             return;
         }
     })
+    
+    app.post(`${globals.route_start}/account/update/email`, async (req, res) => {
+        if(!req.body || !req.body.token || !req.body.newEmail) {
+            res.status(400).json({
+                error: "Missing parameters"
+            })
+            return;
+        }
+
+        try {
+            const token = await TokenSchema.findOne({ token: req.body.token });
+
+            if(!token) {
+                res.status(400).json({
+                    error: "Invalid token"
+                })
+                return;
+            }
+
+            if(!hasPermission(token.permissions, "UPDATE_EMAIL")) {
+                res.status(403).json({
+                    error: "You don't have permission to update email"
+                })
+                return;
+            }
+
+            const user = await UserSchema.findOne({ _id: token.userId });
+
+            if(!user) {
+                res.status(400).json({
+                    error: "Invalid user"
+                })
+                return;
+            }
+
+            if(user.email === req.body.newEmail) {
+                res.status(400).json({
+                    error: "Email already exists"
+                })
+                return;
+            }
+
+            await user.update({
+                email: req.body.newEmail
+            })
+
+            res.status(200).json({
+                success: true,
+                message: "Email updated"
+            })
+
+        }catch (e) {
+            res.status(500).json({
+                error: e.message
+            })
+            return;
+        }
+    })
 }

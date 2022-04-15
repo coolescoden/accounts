@@ -10,6 +10,8 @@
  * VIEW_EMAIL - can view the email
  * VIEW_CREATED_AT - can view the created at date
  * VIEW_UPDATED_AT - can view the updated at date
+ * UPDATE_PASSWORD - can update the hashed password
+ * UPDATE_USERNAME - can update the username
  */
 
 export function hasPermission(permissions: string[], permission: string): boolean {

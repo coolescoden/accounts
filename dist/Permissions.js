@@ -12,6 +12,8 @@ exports.hasPermission = void 0;
  * VIEW_EMAIL - can view the email
  * VIEW_CREATED_AT - can view the created at date
  * VIEW_UPDATED_AT - can view the updated at date
+ * UPDATE_PASSWORD - can update the hashed password
+ * UPDATE_USERNAME - can update the username
  */
 function hasPermission(permissions, permission) {
     if (permissions.includes(permission)) {
