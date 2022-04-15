@@ -8,4 +8,14 @@ export interface Options {
     basePath: string;
     mongoUrl: string;
     app: Express;
+    smtp: {
+        host: string;
+        port: number;
+        secure: boolean;
+        auth: {
+            user: string;
+            pass: string;
+        };
+        displayName: string;
+    };
 }

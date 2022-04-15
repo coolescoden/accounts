@@ -34,6 +34,10 @@ var UserSchema = new mongoose.Schema({
         default: true,
         required: true,
     },
+    activationToken: {
+        type: String,
+        required: false,
+    },
 });
 exports.default = mongoose.model("User", UserSchema);
 //# sourceMappingURL=User.js.map

@@ -39,10 +39,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var globals = require("../globals");
 var User_1 = require("../models/User");
 var crypto = require("crypto");
-function default_1(app) {
+var StringUtil_1 = require("../StringUtil");
+var nodemailer = require("nodemailer");
+function default_1(app, smtp) {
     var _this = this;
+    var transporter = nodemailer.createTransport({
+        host: smtp.host,
+        port: smtp.port,
+        secure: smtp.secure,
+        auth: smtp.auth
+    });
     app.post("".concat(globals.route_start, "/account/create"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-        var user, e_1;
+        var acToken, user, info, e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -54,7 +62,7 @@ function default_1(app) {
                     }
                     _a.label = 1;
                 case 1:
-                    _a.trys.push([1, 5, , 6]);
+                    _a.trys.push([1, 6, , 7]);
                     return [4 /*yield*/, User_1.default.find({ name: req.body.username }).countDocuments()];
                 case 2:
                     if ((_a.sent()) > 0) {
@@ -63,11 +71,13 @@ function default_1(app) {
                         });
                         return [2 /*return*/];
                     }
+                    acToken = req.body.username + "$" + (0, StringUtil_1.randomString)(48);
                     return [4 /*yield*/, User_1.default.create({
                             name: req.body.username,
                             password: crypto.createHash("sha256").update(req.body.password).digest("hex"),
                             email: req.body.email,
-                            active: false
+                            active: false,
+                            activationToken: acToken
                         })];
                 case 3:
                     user = _a.sent();
@@ -75,21 +85,68 @@ function default_1(app) {
                 case 4:
                     _a.sent();
                     console.log("Created user ".concat(user.name, " with id ").concat(user._id));
+                    return [4 /*yield*/, transporter.sendMail({
+                            from: smtp.displayName + " <" + smtp.auth.user + ">",
+                            to: user.email,
+                            subject: "Account activation",
+                            text: "Hello ".concat(user.name, ",\n\nPlease click on the following link to activate your account:\n\n").concat(req.protocol + "//" + req.hostname).concat(globals.route_start, "/account/activate/").concat(acToken, "\n\nThank you!"),
+                            html: "<p>Hello ".concat(user.name, ",</p><p>Please click on the following link to activate your account:</p><p><a href=\"").concat(req.protocol + "//" + req.hostname).concat(globals.route_start, "/account/activate/").concat(acToken, "\">").concat(req.protocol + "//" + req.hostname).concat(globals.route_start, "/account/activate/").concat(acToken, "</a></p><p>Thank you!</p>")
+                        })];
+                case 5:
+                    info = _a.sent();
+                    console.log("Message sent: %s", info.messageId);
+                    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
                     res.status(200).json({
                         success: true,
                         user: user
                     });
-                    return [3 /*break*/, 6];
-                case 5:
+                    return [3 /*break*/, 7];
+                case 6:
                     e_1 = _a.sent();
                     res.status(500).json({
                         error: e_1.message
                     });
                     return [2 /*return*/];
-                case 6: return [2 /*return*/];
+                case 7: return [2 /*return*/];
             }
         });
     }); });
+    app.get("".concat(globals.route_start, "/account/activate/:token"), function (req, res) {
+        if (!req.params || !req.params.token) {
+            res.status(400).json({
+                error: "Missing parameters"
+            });
+            return;
+        }
+        User_1.default.findOne({ activationToken: req.params.token }, function (err, user) {
+            if (err) {
+                res.status(500).json({
+                    error: err.message
+                });
+                return;
+            }
+            if (!user) {
+                res.status(400).json({
+                    error: "Invalid token"
+                });
+                return;
+            }
+            user.active = true;
+            user.activationToken = "";
+            user.save(function (err) {
+                if (err) {
+                    res.status(500).json({
+                        error: err.message
+                    });
+                    return;
+                }
+                res.status(200).json({
+                    success: true,
+                    user: user
+                });
+            });
+        });
+    });
 }
 exports.default = default_1;
 //# sourceMappingURL=account.js.map

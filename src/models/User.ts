@@ -34,6 +34,10 @@ const UserSchema = new mongoose.Schema({
         default: true,
         required: true,
     },
+    activationToken: {
+        type: String,
+        required: false,
+    },
 })
 
 export default mongoose.model("User", UserSchema);
