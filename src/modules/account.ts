@@ -505,7 +505,7 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             return;
         }
     })
-    
+
     app.post(`${globals.route_start}/account/update/email`, async (req, res) => {
         if(!req.body || !req.body.token || !req.body.newEmail) {
             res.status(400).json({

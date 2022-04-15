@@ -8,6 +8,7 @@ import * as cors from "cors";
 import {json} from "body-parser";
 import * as mongoose from "mongoose";
 import account from "./modules/account";
+import data from "./modules/data";
 
 export function accounts(options: Options): void {
 
@@ -27,6 +28,8 @@ export function accounts(options: Options): void {
         }
     })
 
-    account(options.app, options.smtp)
+    account(options.app, options.smtp);
+
+    data(options.app);
 
 }
