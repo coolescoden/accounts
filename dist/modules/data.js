@@ -280,6 +280,12 @@ function default_1(app) {
                         });
                         return [2 /*return*/];
                     }
+                    if (!(0, Permissions_1.hasPermission)(data.access.some(function (access) { return access.userId.toString() === user_3._id.toString(); }), "DATA_DELETE")) {
+                        res.status(403).json({
+                            error: "No access"
+                        });
+                        return [2 /*return*/];
+                    }
                     return [4 /*yield*/, data.remove()];
                 case 5:
                     _a.sent();
@@ -452,7 +458,7 @@ function default_1(app) {
                         });
                         return [2 /*return*/];
                     }
-                    if (!(0, Permissions_1.hasPermission)(userPermissions, "DATA_SET_PERMISSIONS")) {
+                    if (!(0, Permissions_1.hasPermission)(userPermissions, "DATA_REMOVE_USER")) {
                         res.status(403).json({
                             error: "No permissions"
                         });

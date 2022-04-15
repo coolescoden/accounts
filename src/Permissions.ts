@@ -12,6 +12,9 @@
  * VIEW_UPDATED_AT - can view the updated at date
  * UPDATE_PASSWORD - can update the hashed password
  * UPDATE_USERNAME - can update the username
+ * DATA_SET_PERMISSIONS - can set permissions for other users
+ * DATA_REMOVE_USER - can remove users
+ * DATA_DELETE - can delete data
  */
 
 export function hasPermission(permissions: string[], permission: string): boolean {

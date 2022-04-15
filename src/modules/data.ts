@@ -220,6 +220,13 @@ export default function (app: Express) {
                 return;
             }
 
+            if(!hasPermission(data.access.some(access => access.userId.toString() === user._id.toString()), "DATA_DELETE")) {
+                res.status(403).json({
+                    error: "No access"
+                });
+                return;
+            }
+
             await data.remove();
 
             res.status(200).json({
@@ -389,7 +396,7 @@ export default function (app: Express) {
                 return;
             }
 
-            if (!hasPermission(userPermissions, "DATA_SET_PERMISSIONS")) {
+            if (!hasPermission(userPermissions, "DATA_REMOVE_USER")) {
                 res.status(403).json({
                     error: "No permissions"
                 });
