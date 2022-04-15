@@ -8,6 +8,7 @@ import UserSchema from "../models/User";
 import * as crypto from "crypto";
 import {randomString} from "../StringUtil";
 import * as nodemailer from "nodemailer";
+import TokenSchema from "../models/Token";
 
 export default function (app: Express, smtp: { host: string, port: number, secure: boolean, auth: { user: string, pass: string }, displayName: string }) {
 
@@ -193,4 +194,100 @@ export default function (app: Express, smtp: { host: string, port: number, secur
         }
     })
 
+    app.post(`${globals.route_start}/account/token/create`, async (req, res) => {
+        if(!req.body || !req.body.username && !req.body.password) {
+            res.status(400).json({
+                error: "Missing parameters"
+            })
+            return;
+        }
+
+        try {
+
+            const user = await UserSchema.findOne({ name: req.body.username, password: crypto.createHash("sha256").update(req.body.password).digest("hex") });
+
+            if(!user) {
+                res.status(400).json({
+                    error: "Invalid credentials"
+                })
+                return;
+            }
+
+            let permissions = ["ADMIN"];
+            let expiresAt = new Date(new Date().valueOf() + 1000 * 60 * 60 * 24 * 30);
+
+            if(req.body.permissions) {
+                permissions = req.body.permissions;
+            }
+
+            const token = await TokenSchema.create({
+                token: randomString(64),
+                userId: user._id,
+                permissions: permissions,
+                expiresAt: expiresAt
+            })
+
+            res.status(200).json({
+                success: true,
+                token: token.token,
+                expiresAt: expiresAt
+            })
+
+        }catch (e) {
+            res.status(500).json({
+                error: e.message
+            })
+            return;
+        }
+    })
+
+    app.post(`${globals.route_start}/account/token/delete`, async (req, res) => {
+        if(!req.body || !req.body.token || !req.body.username || !req.body.password) {
+            res.status(400).json({
+                error: "Missing parameters"
+            })
+            return;
+        }
+
+        try {
+
+            const user = await UserSchema.findOne({ name: req.body.username, password: crypto.createHash("sha256").update(req.body.password).digest("hex") });
+
+            if(!user) {
+                res.status(400).json({
+                    error: "Invalid credentials"
+                })
+                return;
+            }
+
+            const token = await TokenSchema.findOne({ token: req.body.token });
+
+            if(!token) {
+                res.status(400).json({
+                    error: "Invalid token"
+                })
+                return;
+            }
+
+            if(token.userId.toString() !== user._id.toString()) {
+                res.status(400).json({
+                    error: "Invalid user"
+                })
+                return;
+            }
+
+            await token.remove();
+
+            res.status(200).json({
+                success: true,
+                message: "Token deleted"
+            })
+
+        }catch (e) {
+            res.status(500).json({
+                error: e.message
+            })
+            return;
+        }
+    })
 }

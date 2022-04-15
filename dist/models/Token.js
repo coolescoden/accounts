@@ -18,11 +18,13 @@ var TokenSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
+        required: true
     },
     expiresAt: {
         type: Date,
         default: function () { return new Date(new Date().valueOf() + 1000 * 60 * 60 * 24 * 30); },
-        expires: 180
+        expires: 180,
+        required: true
     },
     permissions: {
         type: [String],

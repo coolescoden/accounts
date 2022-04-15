@@ -41,6 +41,7 @@ var User_1 = require("../models/User");
 var crypto = require("crypto");
 var StringUtil_1 = require("../StringUtil");
 var nodemailer = require("nodemailer");
+var Token_1 = require("../models/Token");
 function default_1(app, smtp) {
     var _this = this;
     var transporter = nodemailer.createTransport({
@@ -236,6 +237,114 @@ function default_1(app, smtp) {
                     });
                     return [2 /*return*/];
                 case 5: return [2 /*return*/];
+            }
+        });
+    }); });
+    app.post("".concat(globals.route_start, "/account/token/create"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var user, permissions, expiresAt, token, e_4;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!req.body || !req.body.username && !req.body.password) {
+                        res.status(400).json({
+                            error: "Missing parameters"
+                        });
+                        return [2 /*return*/];
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 4, , 5]);
+                    return [4 /*yield*/, User_1.default.findOne({ name: req.body.username, password: crypto.createHash("sha256").update(req.body.password).digest("hex") })];
+                case 2:
+                    user = _a.sent();
+                    if (!user) {
+                        res.status(400).json({
+                            error: "Invalid credentials"
+                        });
+                        return [2 /*return*/];
+                    }
+                    permissions = ["ADMIN"];
+                    expiresAt = new Date(new Date().valueOf() + 1000 * 60 * 60 * 24 * 30);
+                    if (req.body.permissions) {
+                        permissions = req.body.permissions;
+                    }
+                    return [4 /*yield*/, Token_1.default.create({
+                            token: (0, StringUtil_1.randomString)(64),
+                            userId: user._id,
+                            permissions: permissions,
+                            expiresAt: expiresAt
+                        })];
+                case 3:
+                    token = _a.sent();
+                    res.status(200).json({
+                        success: true,
+                        token: token.token,
+                        expiresAt: expiresAt
+                    });
+                    return [3 /*break*/, 5];
+                case 4:
+                    e_4 = _a.sent();
+                    res.status(500).json({
+                        error: e_4.message
+                    });
+                    return [2 /*return*/];
+                case 5: return [2 /*return*/];
+            }
+        });
+    }); });
+    app.post("".concat(globals.route_start, "/account/token/delete"), function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var user, token, e_5;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!req.body || !req.body.token || !req.body.username || !req.body.password) {
+                        res.status(400).json({
+                            error: "Missing parameters"
+                        });
+                        return [2 /*return*/];
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 5, , 6]);
+                    return [4 /*yield*/, User_1.default.findOne({ name: req.body.username, password: crypto.createHash("sha256").update(req.body.password).digest("hex") })];
+                case 2:
+                    user = _a.sent();
+                    if (!user) {
+                        res.status(400).json({
+                            error: "Invalid credentials"
+                        });
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, Token_1.default.findOne({ token: req.body.token })];
+                case 3:
+                    token = _a.sent();
+                    if (!token) {
+                        res.status(400).json({
+                            error: "Invalid token"
+                        });
+                        return [2 /*return*/];
+                    }
+                    if (token.userId.toString() !== user._id.toString()) {
+                        res.status(400).json({
+                            error: "Invalid user"
+                        });
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, token.remove()];
+                case 4:
+                    _a.sent();
+                    res.status(200).json({
+                        success: true,
+                        message: "Token deleted"
+                    });
+                    return [3 /*break*/, 6];
+                case 5:
+                    e_5 = _a.sent();
+                    res.status(500).json({
+                        error: e_5.message
+                    });
+                    return [2 /*return*/];
+                case 6: return [2 /*return*/];
             }
         });
     }); });
