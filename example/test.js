@@ -12,8 +12,6 @@ const nodemailer = require('nodemailer');
 
     const app = express();
 
-    const testAccount = await nodemailer.createTestAccount();
-
     accounts({
         app,
         basePath: "/api/v1",
