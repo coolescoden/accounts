@@ -594,7 +594,7 @@ export default function (app: Express, smtp: { host: string, port: number, secur
                 })
                 return;
             }
-            
+
             if(!user.active) {
                 res.status(400).json({
                     error: "Account not activated"
