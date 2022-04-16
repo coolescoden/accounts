@@ -223,6 +223,12 @@ function default_1(app, smtp) {
                         });
                         return [2 /*return*/];
                     }
+                    if (!user.active) {
+                        res.status(400).json({
+                            error: "Account not activated"
+                        });
+                        return [2 /*return*/];
+                    }
                     return [4 /*yield*/, user.remove()];
                 case 3:
                     _a.sent();
@@ -261,6 +267,12 @@ function default_1(app, smtp) {
                     if (!user) {
                         res.status(400).json({
                             error: "Invalid credentials"
+                        });
+                        return [2 /*return*/];
+                    }
+                    if (!user.active) {
+                        res.status(400).json({
+                            error: "Account not activated"
                         });
                         return [2 /*return*/];
                     }
@@ -313,6 +325,12 @@ function default_1(app, smtp) {
                     if (!user) {
                         res.status(400).json({
                             error: "Invalid credentials"
+                        });
+                        return [2 /*return*/];
+                    }
+                    if (!user.active) {
+                        res.status(400).json({
+                            error: "Account not activated"
                         });
                         return [2 /*return*/];
                     }
@@ -375,6 +393,18 @@ function default_1(app, smtp) {
                     return [4 /*yield*/, User_1.default.findOne({ _id: token.userId })];
                 case 3:
                     user = _a.sent();
+                    if (!user) {
+                        res.status(400).json({
+                            error: "Invalid user"
+                        });
+                        return [2 /*return*/];
+                    }
+                    if (!user.active) {
+                        res.status(400).json({
+                            error: "Account not activated"
+                        });
+                        return [2 /*return*/];
+                    }
                     x = JSON.parse(JSON.stringify(user));
                     if (!(0, Permissions_1.hasPermission)(token.permissions, "VIEW_PASSWORD")) {
                         delete x.password;
@@ -438,6 +468,12 @@ function default_1(app, smtp) {
                         });
                         return [2 /*return*/];
                     }
+                    if (!user.active) {
+                        res.status(400).json({
+                            error: "Account not activated"
+                        });
+                        return [2 /*return*/];
+                    }
                     expiresAt = new Date();
                     expiresAt.setDate(expiresAt.getDate() + 1);
                     return [4 /*yield*/, token.update({
@@ -495,6 +531,12 @@ function default_1(app, smtp) {
                     if (!user) {
                         res.status(400).json({
                             error: "Invalid user"
+                        });
+                        return [2 /*return*/];
+                    }
+                    if (!user.active) {
+                        res.status(400).json({
+                            error: "Account not activated"
                         });
                         return [2 /*return*/];
                     }
@@ -562,6 +604,12 @@ function default_1(app, smtp) {
                         });
                         return [2 /*return*/];
                     }
+                    if (!user.active) {
+                        res.status(400).json({
+                            error: "Account not activated"
+                        });
+                        return [2 /*return*/];
+                    }
                     hashedPassword = crypto.createHash("sha256").update(req.body.newPassword).digest("hex");
                     return [4 /*yield*/, user.update({
                             password: hashedPassword
@@ -618,6 +666,12 @@ function default_1(app, smtp) {
                     if (!user) {
                         res.status(400).json({
                             error: "Invalid user"
+                        });
+                        return [2 /*return*/];
+                    }
+                    if (!user.active) {
+                        res.status(400).json({
+                            error: "Account not activated"
                         });
                         return [2 /*return*/];
                     }

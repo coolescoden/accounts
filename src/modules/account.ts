@@ -180,6 +180,13 @@ export default function (app: Express, smtp: { host: string, port: number, secur
                 return;
             }
 
+            if(!user.active) {
+                res.status(400).json({
+                    error: "Account not activated"
+                })
+                return;
+            }
+
             await user.remove();
 
             res.status(200).json({
@@ -210,6 +217,13 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             if(!user) {
                 res.status(400).json({
                     error: "Invalid credentials"
+                })
+                return;
+            }
+
+            if(!user.active) {
+                res.status(400).json({
+                    error: "Account not activated"
                 })
                 return;
             }
@@ -257,6 +271,13 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             if(!user) {
                 res.status(400).json({
                     error: "Invalid credentials"
+                })
+                return;
+            }
+
+            if(!user.active) {
+                res.status(400).json({
+                    error: "Account not activated"
                 })
                 return;
             }
@@ -311,6 +332,20 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             }
 
             const user = await UserSchema.findOne({ _id: token.userId });
+
+            if(!user) {
+                res.status(400).json({
+                    error: "Invalid user"
+                })
+                return;
+            }
+
+            if(!user.active) {
+                res.status(400).json({
+                    error: "Account not activated"
+                })
+                return;
+            }
 
             const x = JSON.parse(JSON.stringify(user));
 
@@ -374,6 +409,13 @@ export default function (app: Express, smtp: { host: string, port: number, secur
                 return;
             }
 
+            if(!user.active) {
+                res.status(400).json({
+                    error: "Account not activated"
+                })
+                return;
+            }
+
             const expiresAt = new Date();
             expiresAt.setDate(expiresAt.getDate() + 1);
 
@@ -424,6 +466,13 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             if(!user) {
                 res.status(400).json({
                     error: "Invalid user"
+                })
+                return;
+            }
+
+            if(!user.active) {
+                res.status(400).json({
+                    error: "Account not activated"
                 })
                 return;
             }
@@ -486,6 +535,12 @@ export default function (app: Express, smtp: { host: string, port: number, secur
                 return;
             }
 
+            if(!user.active) {
+                res.status(400).json({
+                    error: "Account not activated"
+                })
+                return;
+            }
 
             const hashedPassword = crypto.createHash("sha256").update(req.body.newPassword).digest("hex");
 
@@ -536,6 +591,13 @@ export default function (app: Express, smtp: { host: string, port: number, secur
             if(!user) {
                 res.status(400).json({
                     error: "Invalid user"
+                })
+                return;
+            }
+            
+            if(!user.active) {
+                res.status(400).json({
+                    error: "Account not activated"
                 })
                 return;
             }
